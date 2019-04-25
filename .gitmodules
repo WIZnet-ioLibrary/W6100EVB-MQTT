@@ -1,0 +1,3 @@
+[submodule "io6Library"]
+	path = io6Library
+	url = https://github.com/Wiznet/io6Library
