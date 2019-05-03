@@ -44,7 +44,7 @@
 #include "wizchip_conf.h"
 #include "socket.h"
 
-unsigned long MilliTimer;
+unsigned long MilliTimer = 0;
 
 /*
  * @brief MQTT MilliTimer handler

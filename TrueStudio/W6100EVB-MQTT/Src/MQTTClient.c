@@ -191,6 +191,7 @@ int deliverMessage(MQTTClient* c, MQTTString* topicName, MQTTMessage* message)
     return rc;
 }
 
+extern unsigned long MilliTimer;
 
 int keepalive(MQTTClient* c)
 {

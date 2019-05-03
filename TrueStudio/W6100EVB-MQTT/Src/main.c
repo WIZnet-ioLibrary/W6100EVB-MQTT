@@ -113,7 +113,7 @@ uint8_t bAnyPacket = 0;
 uint16_t pack_size = 0;
 
 static uint8_t data_buf[2048] ={0,};
-u_char URL[] = "www.google.com";
+const uint8_t URL[] = "test.mosquitto.org";
 uint8_t dns_server_ip[4] = {168,126,63,1};
 uint8_t dns_server_ip6[16] = {0x20,0x01,0x48,0x60,
 								0x48,0x60,0x00,0x00,
@@ -136,7 +136,7 @@ unsigned char targetIP[16] = {
 
 unsigned int targetPort = 1883; // mqtt server port
 
-unsigned char tempBuffer[2048] = {};
+unsigned char tempBuffer[1024*2] = {};
 
 struct opts_struct
 {
@@ -155,23 +155,43 @@ struct opts_struct
 void messageArrived(MessageData* md)
 {
 	unsigned char testbuffer[100];
+	uint32_t rd_size;
+	uint32_t rd_pt;
+	uint32_t rdmore_size;
+
 	MQTTMessage* message = md->message;
 	MQTTString* topic = md->topicName;
 
-	if (opts.showtopics)
+	rdmore_size = (int)topic->lenstring.len;
+	rd_pt = 0;
+
+	while(rdmore_size != 0)
 	{
-		memset(testbuffer, 0, (int)topic->lenstring.len + 1);
-		memcpy(testbuffer,(char*)topic->lenstring.data,(int)topic->lenstring.len);
-		printf("%s\\\r\n",testbuffer);
+		if(rdmore_size > sizeof(testbuffer) - 1)
+		{
+			rd_size = sizeof(testbuffer) - 1;			
+		}
+		else
+		{
+			rd_size = rdmore_size;
+		}
+
+		memset(testbuffer, 0, rd_size + 1);
+
+		memcpy(testbuffer, ((char*)topic->lenstring.data) + rd_pt, rd_size);
+		printf("Topic : %s\r\n", testbuffer);
+
+		rd_pt += rd_size;
+		rdmore_size -= rd_size;
 	}
 
 	if (opts.nodelimiter)
 	{
-		printf("%.*s", (int)message->payloadlen, (char*)message->payload);
+		printf("Message : %.*s\r\n", (int)message->payloadlen, (char*)message->payload);
 	}
 	else
 	{
-		printf("%.*s%s", (int)message->payloadlen, (char*)message->payload, opts.delimiter);
+		printf("Message : %.*s%s\r\n", (int)message->payloadlen, (char*)message->payload, opts.delimiter);
 	}
 }
 
@@ -253,11 +273,18 @@ int main(void)
 	print_network_information();
 	DNS_init(ethBuf0);
 
+	IP_TYPE = 0x1c;
+	while (DNS_run(0, dns_server_ip6, URL, dnsclient_ip, AS_IPV6) != 1);
+	printf("> Translated %s to %.2x%.2x:%.2x%.2x:%.2x%.2x:%.2x%.2x:%.2x%.2x:%.2x%.2x:%.2x%.2x:%.2x%.2x\r\n", URL, dnsclient_ip[0], dnsclient_ip[1], dnsclient_ip[2], dnsclient_ip[3]
+																											,dnsclient_ip[4],dnsclient_ip[5],dnsclient_ip[6],dnsclient_ip[7]
+																											,dnsclient_ip[8],dnsclient_ip[9],dnsclient_ip[10],dnsclient_ip[11]
+																											,dnsclient_ip[12],dnsclient_ip[13],dnsclient_ip[14],dnsclient_ip[15]);
+	
 	Network n;
 	MQTTClient c;
 	NewNetwork(&n, 0);
-	ConnectNetwork(&n, targetIP, targetPort, AS_IPV6);
-	MQTTClientInit(&c, &n, 1000, buf, 100, tempBuffer, 2048);
+	ConnectNetwork(&n, dnsclient_ip, targetPort, AS_IPV6);
+	MQTTClientInit(&c, &n, 1000, buf, sizeof(buf), tempBuffer, sizeof(tempBuffer));
 
 	MQTTPacket_connectData data = MQTTPacket_connectData_initializer;
 	data.willFlag = 0;
@@ -285,8 +312,11 @@ int main(void)
 
 void delay(unsigned int count)
 {
+	// 10 ms
+
 	int temp;
 	temp = count + TIM2_gettimer();
+	temp *= 10;
 	while(temp > TIM2_gettimer()){}
 }
 
