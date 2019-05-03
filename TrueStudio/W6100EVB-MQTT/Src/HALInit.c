@@ -70,14 +70,14 @@ void timerInitialize(void)
         RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM2,ENABLE);
 
         TIM_TimeBaseInitTypeDef TIM_TimeBaseInitStruct;
-        TIM_TimeBaseInitStruct.TIM_Period = 7200-1;
+        TIM_TimeBaseInitStruct.TIM_Period = 720-1;
         TIM_TimeBaseInitStruct.TIM_Prescaler = 100-1;
         TIM_TimeBaseInitStruct.TIM_ClockDivision = TIM_CKD_DIV1;
         TIM_TimeBaseInitStruct.TIM_CounterMode = TIM_CounterMode_Up;
         TIM_TimeBaseInitStruct.TIM_RepetitionCounter = 0;
         TIM_TimeBaseInit(TIM2,&TIM_TimeBaseInitStruct);
         TIM_ITConfig(TIM2,TIM_IT_Update,ENABLE);
-        TIM_SetAutoreload(TIM2,7200-1);
+        TIM_SetAutoreload(TIM2,720-1);
 
         TIM_Cmd(TIM2,ENABLE);
 
@@ -94,6 +94,7 @@ void timerInitialize(void)
 void TIM2_IRQHandler(void){
         TIM_ClearITPendingBit(TIM2,TIM_IT_Update);
         globalTimer++;
+		MilliTimer_Handler();
 }
 
 
