@@ -13,6 +13,8 @@
 #include "dns.h"
 #include "MQTTClient.h"
 
+#define PUBLISH_MYSELF 0
+
 wiz_NetInfo gWIZNETINFO = { .mac = {
 								0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xED
 								},
@@ -213,6 +215,7 @@ int main(void)
 
 	int rc = 0;
 	uint8_t buf[100];
+	uint8_t pubbuf[100];
 
 	RCC_ClocksTypeDef RCCA_TypeDef;
 	RCCInitialize();
@@ -282,6 +285,9 @@ int main(void)
 	
 	Network n;
 	MQTTClient c;
+	MQTTMessage m;
+	uint32_t ck_timer;
+
 	NewNetwork(&n, 0);
 	ConnectNetwork(&n, dnsclient_ip, targetPort, AS_IPV6);
 	MQTTClientInit(&c, &n, 1000, buf, sizeof(buf), tempBuffer, sizeof(tempBuffer));
@@ -304,9 +310,31 @@ int main(void)
 	rc = MQTTSubscribe(&c, MQTT_TOPIC, opts.qos, messageArrived);
 	printf("Subscribed %d\r\n", rc);
 
+	m.qos = QOS0;
+	m.retained = 0;
+	m.dup = 0;
+
+	ck_timer = TIM2_gettimer();
+
 	while(1)
 	{
 		MQTTYield(&c, data.keepAliveInterval);
+
+#if PUBLISH_MYSELF == 1
+		if(ck_timer + 10000 < TIM2_gettimer())
+		{
+			ck_timer = TIM2_gettimer();
+
+			//printf("Publishing to %s\r\n", MQTT_TOPIC);
+
+			sprintf(pubbuf, "Hello, W6100! @ck_timer(%d)", ck_timer);
+			m.payload = pubbuf;
+			m.payloadlen = strlen(pubbuf);
+
+			rc = MQTTPublish(&c, MQTT_TOPIC, &m);
+			//printf("Published %d\r\n", rc);
+		}
+#endif
 	}
 }
 
