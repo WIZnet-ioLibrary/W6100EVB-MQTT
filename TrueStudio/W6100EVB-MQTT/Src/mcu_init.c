@@ -1,24 +1,9 @@
-#include "HAL_Config.h"
-
-#include "HALInit.h"
-#include "W6100RelFunctions.h"
-#include "misc.h"
-#include "wizchip_conf.h"
-#include "stm32f10x_rcc.h"
-#include "stm32f10x_fsmc.h"
-#include "stm32f10x_gpio.h"
-#include "stm32f10x_usart.h"
-#include "stm32f10x_spi.h"
-#include "stm32f10x_dma.h"
-#include "stm32f10x_tim.h"
-#include "stm32f10x_exti.h"
-#include <stdio.h>
+#include "mcu_init.h"
 
 
 extern DMA_InitTypeDef	DMA_RX_InitStructure, DMA_TX_InitStructure;
 
 volatile unsigned long globalTimer = 0;
-
 
 void HardFault_Handler(void)
 {
@@ -94,7 +79,9 @@ void timerInitialize(void)
 void TIM2_IRQHandler(void){
         TIM_ClearITPendingBit(TIM2,TIM_IT_Update);
         globalTimer++;
-		MilliTimer_Handler();
+
+        // For MQTT
+        MilliTimer_Handler();
 }
 
 
