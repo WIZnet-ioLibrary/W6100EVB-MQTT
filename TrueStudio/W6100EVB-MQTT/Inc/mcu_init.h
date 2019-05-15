@@ -1,10 +1,17 @@
-#ifndef __HAL_CONFIG_H_
-#define __HAL_CONFIG_H_
+#ifndef __MCU_INIT_H__
+#define __MCU_INIT_H__
 
-#include "stm32f10x_rcc.h"
 
-//#define SPI_1
-#define SPI_2  //W6100 EVB
+#include <stdio.h>
+#include "Board_init.h"
+#include "stm32f10x_conf.h"
+#include "misc.h"
+
+// For Ethernet Shield
+//#define SPI_1	
+
+// For EVB
+#define SPI_2
 
 #define PRINTF_USART			USART1
 #define PRINTF_USART_RCC		RCC_APB2Periph_USART1
@@ -63,5 +70,27 @@
 #define DMA_RX_FLAG				DMA1_FLAG_TC4
 
 #endif
+
+void clockConfiguration(void);
+void gpioInitialize(void);
+void usartInitialize(void);
+void spiInitailize(void);
+void RCCInitialize(void);
+/*sample code*/
+uint8_t dataRead(void);
+void wrDisable(void);
+void wrEnable(void);
+void rdDisable(void);
+void rdEnable(void);
+
+void FSMCLowSpeed();
+void FSMCHighSpeed();
+
+extern volatile unsigned long globalTimer;
+
+void TIM2_settimer(void);
+unsigned long TIM2_gettimer(void);
+
+
 
 #endif
