@@ -26,7 +26,7 @@ void W6100Initialze(void)
 	#endif
 #endif
 
-	intr_kind temp;
+	uint8_t temp;
 	unsigned char W6100_AdrSet[2][8] = {{2, 2, 2, 2, 2, 2, 2, 2}, {2, 2, 2, 2, 2, 2, 2, 2}};
 	do
 	{
@@ -37,18 +37,7 @@ void W6100Initialze(void)
 	} while (temp == PHY_LINK_OFF);
 	printf("PHY OK.\r\n");
 
-	temp = IK_DEST_UNREACH;
 
-	if (ctlwizchip(CW_INIT_WIZCHIP, (void *)W6100_AdrSet) == -1)
-	{
-		printf("W6100 initialized fail.\r\n");
-	}
-
-	if (ctlwizchip(CW_SET_INTRMASK, &temp) == -1)
-	{
-		printf("W6100 interrupt\r\n");
-	}
-	//printf("interrupt mask: %02x\r\n",getIMR());
 }
 
 uint8_t W6100SpiReadByte(void)
